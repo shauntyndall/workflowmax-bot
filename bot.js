@@ -1,6 +1,6 @@
 //  __   __  ___        ___
-// |__) /  \  |  |__/ |  |  
-// |__) \__/  |  |  \ |  |  
+// |__) /  \  |  |__/ |  |
+// |__) \__/  |  |  \ |  |
 
 // This is the main file for the WorkflowMax Bot bot.
 
@@ -27,12 +27,10 @@ if (process.env.MONGO_URI) {
 
 
 const adapter = new SlackAdapter({
-    // REMOVE THIS OPTION AFTER YOU HAVE CONFIGURED YOUR APP!
-    enable_incomplete: true,
 
     // parameters used to secure webhook endpoint
     verificationToken: process.env.VERIFICATION_TOKEN,
-    clientSigningSecret: process.env.CLIENT_SIGNING_SECRET,  
+    clientSigningSecret: process.env.CLIENT_SIGNING_SECRET,
 
     // auth token for a single-team app
     botToken: process.env.BOT_TOKEN,
@@ -40,9 +38,9 @@ const adapter = new SlackAdapter({
     // credentials used to set up oauth for multi-team apps
     clientId: process.env.CLIENT_ID,
     clientSecret: process.env.CLIENT_SECRET,
-    scopes: ['bot'], 
+    scopes: ['bot'],
     redirectUri: process.env.REDIRECT_URI,
- 
+
     // functions required for retrieving team-specific info
     // for use in multi-team apps
     getTokenForTeam: getTokenForTeam,
@@ -136,11 +134,11 @@ let userCache = {};
 
 if (process.env.TOKENS) {
     tokenCache = JSON.parse(process.env.TOKENS);
-} 
+}
 
 if (process.env.USERS) {
     userCache = JSON.parse(process.env.USERS);
-} 
+}
 
 async function getTokenForTeam(teamId) {
     if (tokenCache[teamId]) {
@@ -165,4 +163,3 @@ async function getBotUserByTeam(teamId) {
         console.error('Team not found in userCache: ', teamId);
     }
 }
-
