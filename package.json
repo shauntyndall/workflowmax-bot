@@ -12,6 +12,8 @@
     "botbuilder-storage-mongodb": "^0.9.5",
     "botkit": "^4.6.0",
     "botkit-plugin-cms": "^1.0.3",
-    "dotenv": "^7.0.0"
+    "dotenv": "^7.0.0",
+    "workflowmax": "^1.0.6",
+    "xml2js": "^0.4.23"
   }
 }
