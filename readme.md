@@ -10,3 +10,4 @@ This is a Botkit based bot that provides information from WorkflowMax to be acce
 - [ ] Add solution to alllow app storage of WorkflowMax API keys. The goal is to make the app shareable to other teams.
 - [ ] Provide mechanism to record timesheet entry.
 - [ ] Provide useful links to Job systems (i.e. Trello, Github)
+- [ ] Define local development procedures.
