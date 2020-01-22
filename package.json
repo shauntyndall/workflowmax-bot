@@ -15,5 +15,12 @@
     "dotenv": "^7.0.0",
     "workflowmax": "^1.0.6",
     "xml2js": "^0.4.23"
+  },
+  "engines": {
+    "node": "8.x"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
   }
 }

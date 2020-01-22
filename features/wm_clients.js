@@ -7,7 +7,7 @@ const wfm = new WorkflowMax({
   accountKey: process.env.WM_ACCOUNT_KEY,
 });
 
-// todo: Implement error handling for clientSearch.
+// TODO: Implement error handling for clientSearch.
 async function clientSearch(keyword) {
   let wfm_result
 
@@ -30,6 +30,7 @@ async function clientSearch(keyword) {
     clients = await console.log('Error:', e)
   }
 
+  // Return a rich block result if clients are found.
   if (Array.isArray(clients) && clients.length) {
 
     let blocks = {
@@ -54,12 +55,13 @@ async function clientSearch(keyword) {
       let account_manager = clients[i].AccountManager[0].Name
       let hyperlink = "https://practicemanager.xero.com/Client/" + id + "/Detail"
 
+      // TODO: Add accessory block with "jobs" button.
       let client_block = {
-        "type": "section",
-        "text": {
-          "type": "mrkdwn",
-          "text": "<" + hyperlink + "|" + name + "> \n" + account_manager
-        }
+          "type": "section",
+          "text": {
+            "type": "mrkdwn",
+            "text": `<${hyperlink}|${name}>\n${account_manager}`
+          }
       }
 
       blocks.blocks.push(client_block);
@@ -74,9 +76,7 @@ async function clientSearch(keyword) {
 module.exports = function(controller) {
 
   controller.on('slash_command', async(bot, message) => {
-
     await bot.reply(message, await clientSearch(message.text));
-
   });
 
 }
