@@ -50,31 +50,76 @@ async function clientSearch(keyword) {
 
     for (var i = 0; i < clients.length; i++) {
 
+      let custom_fields
       let name = clients[i].Name
       let id = clients[i].ID
       let account_manager = clients[i].AccountManager[0].Name
       let hyperlink = "https://practicemanager.xero.com/Client/" + id + "/Detail"
 
-      // TODO: Add accessory block with "jobs" button.
+      // Get Support Level custom field value
+      custom_fields = await wfm.api.raw.get('client', 'get' + '/' + id + '/customfield')
+        .then(result => {
+
+          return xml2js.parseStringPromise(result, {explicitArray: true})
+            .then(function (result) {
+              let fields = result.Response.CustomFields[0].CustomField;
+              let block_fields = [];
+
+              for (var f = 0; f < fields.length; f++) {
+
+                if (fields[f].Text != null) { // Text field
+                  text = fields[f].Text;
+                } else if (fields[f].Number != null) { // Number field
+                  text = fields[f].Number;
+                } else { // Date field
+                  text = fields[f].Date;
+                }
+
+                let field = {
+        					"type": "mrkdwn",
+        					"text": `*${fields[f].Name}*\n${text}`
+        				}
+
+                block_fields.push(field);
+
+              }
+              return block_fields;
+            });
+        })
+        .catch(error => {
+          console.log('Error:', error)
+        })
+
       let client_block = {
           "type": "section",
           "text": {
             "type": "mrkdwn",
-            "text": `<${hyperlink}|${name}>\n${account_manager}`
+            "text": `*<${hyperlink}|${name}>*\n*Account Manager*: ${account_manager}\n`
           },
           "accessory": {
-    				"type": "button",
-    				"text": {
-    					"type": "plain_text",
-    					"emoji": true,
-    					"text": "Jobs"
-    				},
+            "type": "button",
+            "text": {
+              "type": "plain_text",
+              "emoji": true,
+              "text": "Jobs"
+            },
             "action_id": "getJobs",
-    				"value": `${id}`
-    			}
+            "value": `${id}`
+          }
+      }
+
+      let custom_fields_block = {
+          "type": "section",
+          "fields": custom_fields
+      }
+
+      let divider = {
+        "type": "divider"
       }
 
       blocks.blocks.push(client_block);
+      blocks.blocks.push(custom_fields_block);
+      blocks.blocks.push(divider);
     }
 
     return blocks;
