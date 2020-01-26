@@ -226,10 +226,121 @@ async function getCustomFields(entity, id) {
     })
 }
 
+async function getLeads(category = '') {
+  let wfm_result
+
+  // Query the WorkflowMax API.
+  try {
+    wfm_result = await wfm.api['lead'].current()
+  } catch(e) {
+    wfm_result = await console.log('Error:', e)
+  }
+
+  let leads
+
+  // Parse the XML response to something usable.
+  try {
+    leads = await xml2js.parseStringPromise(wfm_result, {explicitArray: true})
+      .then(function (result) {
+        return result.Response.Leads[0].Lead;
+      });
+  } catch(e) {
+    clients = await console.log('Error:', e)
+  }
+
+  // Return a rich block result if clients are found.
+  if (Array.isArray(leads) && leads.length) {
+
+    let blocks = {
+      blocks: [
+          {
+              "type": "section",
+              "text": {
+                  "type": "mrkdwn",
+                  "text": "I found *" + leads.length + "* current leads, only displaying those with category '" + category + "'."
+              }
+          },
+          {
+            "type": "divider"
+          },
+        ]
+    };
+
+    for (var i = 0; i < leads.length; i++) {
+
+      let name = leads[i].Name
+      let id = leads[i].ID
+      let dropbox = leads[i].Dropbox
+      let lead_category = leads[i].Category[0]
+      let client_name = leads[i].Client[0].Name[0]
+      let staff_name = leads[i].Owner[0].Name[0]
+      let hyperlink = "https://my.workflowmax.com/lead/view.aspx?id=" + id
+
+      if (lead_category.toLowerCase() != category.toLowerCase()) {
+        continue;
+      }
+
+      let lead_block = {
+          "type": "section",
+          "text": {
+            "type": "mrkdwn",
+            "text": `*<${hyperlink}|${name}>*`
+          }
+      }
+
+      let custom_fields = [];
+      custom_fields.push({
+        "type": "mrkdwn",
+        "text": `*Client*\n${client_name}`
+      })
+      custom_fields.push({
+        "type": "mrkdwn",
+        "text": `*Owner*\n${staff_name}`
+      })
+      custom_fields.push({
+        "type": "mrkdwn",
+        "text": `*Category*\n${lead_category}`
+      })
+      custom_fields.push({
+        "type": "mrkdwn",
+        "text": `*Dropbox*\n${dropbox}`
+      })
+      let custom_fields_block = {
+          "type": "section",
+          "fields": custom_fields
+      }
+
+      let divider = {
+        "type": "divider"
+      }
+
+      blocks.blocks.push(lead_block);
+      blocks.blocks.push(custom_fields_block);
+      blocks.blocks.push(divider);
+    }
+
+    return blocks;
+  } else {
+    return "I didn't find any current leads."
+  }
+
+}
+
 module.exports = function(controller) {
 
   controller.on('slash_command', async(bot, message) => {
-    await bot.reply(message, await clientSearch(message.text));
+
+    let words = message.text.split(" ");
+
+    switch (words[0]) {
+      case 'lead':
+      case 'leads':
+        await bot.reply(message, await getLeads(words[1]));
+        break;
+      default:
+        await bot.reply(message, await clientSearch(message.text));
+    }
+
   });
 
   controller.on('block_actions', async (bot, message) => {
