@@ -50,45 +50,10 @@ async function clientSearch(keyword) {
 
     for (var i = 0; i < clients.length; i++) {
 
-      let custom_fields
       let name = clients[i].Name
       let id = clients[i].ID
       let account_manager = clients[i].AccountManager[0].Name
       let hyperlink = "https://practicemanager.xero.com/Client/" + id + "/Detail"
-
-      // Get Support Level custom field value
-      custom_fields = await wfm.api.raw.get('client', 'get' + '/' + id + '/customfield')
-        .then(result => {
-
-          return xml2js.parseStringPromise(result, {explicitArray: true})
-            .then(function (result) {
-              let fields = result.Response.CustomFields[0].CustomField;
-              let block_fields = [];
-
-              for (var f = 0; f < fields.length; f++) {
-
-                if (fields[f].Text != null) { // Text field
-                  text = fields[f].Text;
-                } else if (fields[f].Number != null) { // Number field
-                  text = fields[f].Number;
-                } else { // Date field
-                  text = fields[f].Date;
-                }
-
-                let field = {
-        					"type": "mrkdwn",
-        					"text": `*${fields[f].Name}*\n${text}`
-        				}
-
-                block_fields.push(field);
-
-              }
-              return block_fields;
-            });
-        })
-        .catch(error => {
-          console.log('Error:', error)
-        })
 
       let client_block = {
           "type": "section",
@@ -110,7 +75,7 @@ async function clientSearch(keyword) {
 
       let custom_fields_block = {
           "type": "section",
-          "fields": custom_fields
+          "fields": await getCustomFields('client', id)
       }
 
       let divider = {
@@ -177,6 +142,7 @@ async function getClientJobs(clientID) {
       let name = jobs[i].Name
       let id = jobs[i].InternalID
       let state = jobs[i].State[0]
+      let type = jobs[i].Type
       let hyperlink = "https://my.workflowmax.com/job/jobview.aspx?id=" + id
 
       if (state === 'Completed') {
@@ -187,17 +153,77 @@ async function getClientJobs(clientID) {
           "type": "section",
           "text": {
             "type": "mrkdwn",
-            "text": `<${hyperlink}|${name}>\n${state}`
+            "text": `*<${hyperlink}|${name}>*`
           }
       }
 
+      let custom_fields = await getCustomFields('job', jobs[i].ID);
+      custom_fields.push({
+        "type": "mrkdwn",
+        "text": `*State*\n${state}`
+      })
+      custom_fields.push({
+        "type": "mrkdwn",
+        "text": `*Type*\n${type}`
+      })
+      let custom_fields_block = {
+          "type": "section",
+          "fields": custom_fields
+      }
+
+      let divider = {
+        "type": "divider"
+      }
+
       blocks.blocks.push(job_block);
+      blocks.blocks.push(custom_fields_block);
+      blocks.blocks.push(divider);
     }
     return blocks
   } else {
     return "I didn't find any jobs for the client."
   }
 
+}
+
+async function getCustomFields(entity, id) {
+
+  return await wfm.api.raw.get(entity, 'get' + '/' + id + '/customfield')
+    .then(result => {
+
+      return xml2js.parseStringPromise(result, {explicitArray: true})
+        .then(function (result) {
+
+          let fields = result.Response.CustomFields[0].CustomField;
+          let field_values = [];
+
+          if (Array.isArray(fields) && fields.length) {
+            for (var f = 0; f < fields.length; f++) {
+
+              if (fields[f].Text != null) { // Text field
+                text = fields[f].Text;
+              } else if (fields[f].Number != null) { // Number field
+                text = fields[f].Number;
+              } else { // Date field
+                text = fields[f].Date;
+              }
+
+              let field = {
+                "type": "mrkdwn",
+                "text": `*${fields[f].Name}*\n${text}`
+              }
+
+              field_values.push(field);
+            }
+          }
+
+          return field_values;
+
+        });
+    })
+    .catch(error => {
+      console.log('Error:', error)
+    })
 }
 
 module.exports = function(controller) {
