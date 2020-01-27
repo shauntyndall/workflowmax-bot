@@ -13,8 +13,11 @@ async function clientSearch(keyword) {
 
   // Query the WorkflowMax API.
   try {
-    wfm_result = await wfm.api['client'].search([{ name: 'query', value: keyword}])
-  } catch(e) {
+    wfm_result = await wfm.api['client'].search([{
+      name: 'query',
+      value: keyword
+    }])
+  } catch (e) {
     wfm_result = await console.log('Error:', e)
   }
 
@@ -22,11 +25,13 @@ async function clientSearch(keyword) {
 
   // Parse the XML response to something usable.
   try {
-    clients = await xml2js.parseStringPromise(wfm_result, {explicitArray: true})
-      .then(function (result) {
+    clients = await xml2js.parseStringPromise(wfm_result, {
+        explicitArray: true
+      })
+      .then(function(result) {
         return result.Response.Clients[0].Client;
       });
-  } catch(e) {
+  } catch (e) {
     clients = await console.log('Error:', e)
   }
 
@@ -34,18 +39,17 @@ async function clientSearch(keyword) {
   if (Array.isArray(clients) && clients.length) {
 
     let blocks = {
-      blocks: [
-          {
-              "type": "section",
-              "text": {
-                  "type": "mrkdwn",
-                  "text": "I found *" + clients.length + "* clients based on a search of *" + keyword + "*."
-              }
-          },
-          {
-            "type": "divider"
-          },
-        ]
+      blocks: [{
+          "type": "section",
+          "text": {
+            "type": "mrkdwn",
+            "text": "I found *" + clients.length + "* clients based on a search of *" + keyword + "*."
+          }
+        },
+        {
+          "type": "divider"
+        },
+      ]
     };
 
     for (var i = 0; i < clients.length; i++) {
@@ -56,26 +60,26 @@ async function clientSearch(keyword) {
       let hyperlink = "https://practicemanager.xero.com/Client/" + id + "/Detail"
 
       let client_block = {
-          "type": "section",
+        "type": "section",
+        "text": {
+          "type": "mrkdwn",
+          "text": `*<${hyperlink}|${name}>*\n*Account Manager*: ${account_manager}\n`
+        },
+        "accessory": {
+          "type": "button",
           "text": {
-            "type": "mrkdwn",
-            "text": `*<${hyperlink}|${name}>*\n*Account Manager*: ${account_manager}\n`
+            "type": "plain_text",
+            "emoji": true,
+            "text": "Jobs"
           },
-          "accessory": {
-            "type": "button",
-            "text": {
-              "type": "plain_text",
-              "emoji": true,
-              "text": "Jobs"
-            },
-            "action_id": "getJobs",
-            "value": `${id}`
-          }
+          "action_id": "getJobs",
+          "value": `${id}`
+        }
       }
 
       let custom_fields_block = {
-          "type": "section",
-          "fields": await getCustomFields('client', id)
+        "type": "section",
+        "fields": await getCustomFields('client', id)
       }
 
       let divider = {
@@ -103,7 +107,7 @@ async function getClientJobs(clientID) {
   // Query the WorkflowMax API.
   try {
     wfm_result = await wfm.api.job.rawGet(method + '/' + clientID)
-  } catch(e) {
+  } catch (e) {
     wfm_result = await console.log('Error:', e)
   }
 
@@ -111,11 +115,13 @@ async function getClientJobs(clientID) {
 
   // Parse the XML response to something usable.
   try {
-    jobs = await xml2js.parseStringPromise(wfm_result, {explicitArray: true})
-      .then(function (result) {
+    jobs = await xml2js.parseStringPromise(wfm_result, {
+        explicitArray: true
+      })
+      .then(function(result) {
         return result.Response.Jobs[0].Job;
       });
-  } catch(e) {
+  } catch (e) {
     jobs = await console.log('Error:', e)
   }
 
@@ -123,18 +129,17 @@ async function getClientJobs(clientID) {
   if (Array.isArray(jobs) && jobs.length) {
 
     let blocks = {
-      blocks: [
-          {
-              "type": "section",
-              "text": {
-                  "type": "mrkdwn",
-                  "text": "I found *" + jobs.length + "* jobs for the client."
-              }
-          },
-          {
-            "type": "divider"
-          },
-        ]
+      blocks: [{
+          "type": "section",
+          "text": {
+            "type": "mrkdwn",
+            "text": "I found *" + jobs.length + "* jobs for the client."
+          }
+        },
+        {
+          "type": "divider"
+        },
+      ]
     };
 
     for (var i = 0; i < jobs.length; i++) {
@@ -150,11 +155,11 @@ async function getClientJobs(clientID) {
       }
 
       let job_block = {
-          "type": "section",
-          "text": {
-            "type": "mrkdwn",
-            "text": `*<${hyperlink}|${name}>*`
-          }
+        "type": "section",
+        "text": {
+          "type": "mrkdwn",
+          "text": `*<${hyperlink}|${name}>*`
+        }
       }
 
       let custom_fields = await getCustomFields('job', jobs[i].ID);
@@ -167,8 +172,8 @@ async function getClientJobs(clientID) {
         "text": `*Type*\n${type}`
       })
       let custom_fields_block = {
-          "type": "section",
-          "fields": custom_fields
+        "type": "section",
+        "fields": custom_fields
       }
 
       let divider = {
@@ -191,8 +196,10 @@ async function getCustomFields(entity, id) {
   return await wfm.api.raw.get(entity, 'get' + '/' + id + '/customfield')
     .then(result => {
 
-      return xml2js.parseStringPromise(result, {explicitArray: true})
-        .then(function (result) {
+      return xml2js.parseStringPromise(result, {
+          explicitArray: true
+        })
+        .then(function(result) {
 
           let fields = result.Response.CustomFields[0].CustomField;
           let field_values = [];
@@ -232,7 +239,7 @@ async function getLeads(category = '') {
   // Query the WorkflowMax API.
   try {
     wfm_result = await wfm.api['lead'].current()
-  } catch(e) {
+  } catch (e) {
     wfm_result = await console.log('Error:', e)
   }
 
@@ -240,11 +247,13 @@ async function getLeads(category = '') {
 
   // Parse the XML response to something usable.
   try {
-    leads = await xml2js.parseStringPromise(wfm_result, {explicitArray: true})
-      .then(function (result) {
+    leads = await xml2js.parseStringPromise(wfm_result, {
+        explicitArray: true
+      })
+      .then(function(result) {
         return result.Response.Leads[0].Lead;
       });
-  } catch(e) {
+  } catch (e) {
     clients = await console.log('Error:', e)
   }
 
@@ -252,18 +261,17 @@ async function getLeads(category = '') {
   if (Array.isArray(leads) && leads.length) {
 
     let blocks = {
-      blocks: [
-          {
-              "type": "section",
-              "text": {
-                  "type": "mrkdwn",
-                  "text": "I found *" + leads.length + "* current leads, only displaying those with category '" + category + "'."
-              }
-          },
-          {
-            "type": "divider"
-          },
-        ]
+      blocks: [{
+          "type": "section",
+          "text": {
+            "type": "mrkdwn",
+            "text": "I found *" + leads.length + "* current leads, only displaying those with category '" + category + "'."
+          }
+        },
+        {
+          "type": "divider"
+        },
+      ]
     };
 
     for (var i = 0; i < leads.length; i++) {
@@ -281,11 +289,11 @@ async function getLeads(category = '') {
       }
 
       let lead_block = {
-          "type": "section",
-          "text": {
-            "type": "mrkdwn",
-            "text": `*<${hyperlink}|${name}>*`
-          }
+        "type": "section",
+        "text": {
+          "type": "mrkdwn",
+          "text": `*<${hyperlink}|${name}>*`
+        }
       }
 
       let custom_fields = [];
@@ -306,8 +314,8 @@ async function getLeads(category = '') {
         "text": `*Dropbox*\n<mailto:${dropbox}|Copy Email Address>`
       })
       let custom_fields_block = {
-          "type": "section",
-          "fields": custom_fields
+        "type": "section",
+        "fields": custom_fields
       }
 
       let divider = {
@@ -335,25 +343,24 @@ async function help() {
   help_text += "\nJobs can be access via the client search results."
 
   let blocks = {
-    blocks: [
-        {
-            "type": "section",
-            "text": {
-                "type": "mrkdwn",
-                "text": "Need some help with `/wfm`?"
-            }
-        },
-        {
-            "type": "section",
-            "text": {
-                "type": "mrkdwn",
-                "text": help_text
-            }
-        },
-        {
-          "type": "divider"
-        },
-      ]
+    blocks: [{
+        "type": "section",
+        "text": {
+          "type": "mrkdwn",
+          "text": "Need some help with `/wfm`?"
+        }
+      },
+      {
+        "type": "section",
+        "text": {
+          "type": "mrkdwn",
+          "text": help_text
+        }
+      },
+      {
+        "type": "divider"
+      },
+    ]
   };
 
   return blocks;
@@ -361,7 +368,7 @@ async function help() {
 
 module.exports = function(controller) {
 
-  controller.on('slash_command', async(bot, message) => {
+  controller.on('slash_command', async (bot, message) => {
 
     let words = message.text.split(" ");
 
@@ -388,7 +395,7 @@ module.exports = function(controller) {
       case 'getJobs':
         // TODO: Ideally this response is in a thread (or similar).
         await bot.replyInThread(message, await getClientJobs(action.value));
-      break;
+        break;
     }
   });
 
