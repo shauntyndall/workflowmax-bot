@@ -303,7 +303,7 @@ async function getLeads(category = '') {
       })
       custom_fields.push({
         "type": "mrkdwn",
-        "text": `*Dropbox*\n${dropbox}`
+        "text": `*Dropbox*\n<mailto:${dropbox}|Copy Email Address>`
       })
       let custom_fields_block = {
           "type": "section",
@@ -326,6 +326,39 @@ async function getLeads(category = '') {
 
 }
 
+async function help() {
+
+  help_text = "Use `/wfm` to query WorkflowMax for clients, jobs and leads. Some examples include:"
+  help_text += "\n - `/wfm [keyword]` searches for clients matching the keyword."
+  help_text += "\n - `/wfm leads [category]` returns a list of leads matching the category."
+  help_text += "\n"
+  help_text += "\nJobs can be access via the client search results."
+
+  let blocks = {
+    blocks: [
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "Need some help with `/wfm`?"
+            }
+        },
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": help_text
+            }
+        },
+        {
+          "type": "divider"
+        },
+      ]
+  };
+
+  return blocks;
+}
+
 module.exports = function(controller) {
 
   controller.on('slash_command', async(bot, message) => {
@@ -333,6 +366,10 @@ module.exports = function(controller) {
     let words = message.text.split(" ");
 
     switch (words[0]) {
+      case '':
+      case 'help':
+        await bot.replyEphemeral(message, await help());
+        break;
       case 'lead':
       case 'leads':
         await bot.reply(message, await getLeads(words[1]));
