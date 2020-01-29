@@ -207,10 +207,14 @@ async function getCustomFields(entity, id) {
           if (Array.isArray(fields) && fields.length) {
             for (var f = 0; f < fields.length; f++) {
 
+              console.log(fields[f]);
+
               if (fields[f].Text != null) { // Text field
                 text = fields[f].Text;
               } else if (fields[f].Number != null) { // Number field
                 text = fields[f].Number;
+              } else if (fields[f].Decimal != null) { // Decimal field
+                text = "$" + fields[f].Decimal;
               } else { // Date field
                 text = fields[f].Date;
               }
