@@ -77,9 +77,10 @@ async function clientSearch(keyword) {
         }
       }
 
+      let custom_fields = await getCustomFields('client', id);
       let custom_fields_block = {
         "type": "section",
-        "fields": await getCustomFields('client', id)
+        "fields": custom_fields
       }
 
       let divider = {
@@ -87,7 +88,11 @@ async function clientSearch(keyword) {
       }
 
       blocks.blocks.push(client_block);
-      blocks.blocks.push(custom_fields_block);
+
+      if (custom_fields.length) {
+        blocks.blocks.push(custom_fields_block);
+      }
+
       blocks.blocks.push(divider);
     }
 
@@ -206,8 +211,6 @@ async function getCustomFields(entity, id) {
 
           if (Array.isArray(fields) && fields.length) {
             for (var f = 0; f < fields.length; f++) {
-
-              console.log(fields[f]);
 
               if (fields[f].Text != null) { // Text field
                 text = fields[f].Text;
