@@ -8,6 +8,15 @@ This is a Botkit based bot that provides information from WorkflowMax to be acce
 
 WorkflowMax custom fields are returned when clients or jobs are presented.
 
+# Contributing
+
+- Checkout repository
+- `ngrok http 3000`
+- `npm install`
+- `npm start`
+- Copy ngrok url into api.slack.com app configuration.
+
+
 ## TODO
 
 - [ ] Add solution to allow app storage of WorkflowMax API keys. The goal is to make the app shareable to other teams.
